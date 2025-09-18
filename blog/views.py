@@ -55,5 +55,63 @@
 #         return redirect(reverse('blog:post_list'))
 #
 #     return HttpResponseBadRequest("Something went wrong")
+from django.contrib import messages
+from django.core.paginator import Paginator
+from django.shortcuts import render, redirect, get_object_or_404
+
+from blog.forms import PostForm
+from blog.models import Post
+from django.db.models import Q
+
+#page
+def post_list(request):
+    q = (request.GET.get('q') or "").strip()
+    qs = Post.objects.all()
+    if q:
+        qs = qs.filter(
+            Q(title__icontains=q) | Q(content__icontains=q)
+        ).distinct()
+
+    paginator = Paginator(qs, 5)
+    page = request.GET.get('page') or 1
+    page_obj = paginator.get_page(page)
+
+    return render(request, 'blog/post_list.html',
+                  {'page_obj': page_obj,
+                   "posts": page_obj.object_list,
+                   "q": q})
 
 
+def post_search(request):
+    return redirect(post_list)
+
+def post_create(request):
+    if request.method == "GET":
+        form=PostForm()
+        return render(request, 'blog/post_form.html', {'form': form,"mode":"create"})
+
+    form = PostForm(request.POST)
+
+    if form.is_valid():
+        post = form.save()
+        messages.success(request, "Post created successfully")
+        return redirect('blog:post_detail',slug=post.slug)
+
+    messages.error(request, "Something went wrong")
+    return render(request, 'blog/post_form.html', {'form': form,"mode":"create"})
+
+def post_detail_by_slug(request, slug:str):
+    post=get_object_or_404(Post, slug=slug)
+    return render(request, 'blog/post_detail.html', {'post': post})
+
+def post_detail_by_pk(request, slug:str):
+    post=get_object_or_404(Post, slug=slug)
+    return render(request, 'blog/post_detail.html', {'post': post})
+
+def post_delete(request, pk:int):
+    post=get_object_or_404(Post, pk=pk)
+    if request.method == "GET":
+        return render(request,"blog/post_confirm_delete.html",{"post":post})
+    post.delete()
+    messages.success(request, "Post deleted successfully")
+    return redirect('blog:post_list')

@@ -15,7 +15,7 @@
 
     <p>
     <a class="btn">Edit</a>
-    <a class="btn btn-danger" href="{% url 'blog:post_delete' post.id %}">Delete</a>
+    <a class="btn btn-danger" href="{% url 'blog:post_delete' post.pk %}">Delete</a>
     </p>
 
 {% endblock %}

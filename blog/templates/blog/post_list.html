@@ -24,6 +24,16 @@
         </tbody>
     </table>
 
+        <div style="margin-top:12px">
+            {%  if page_obj.has_previous %}
+                <a class="btn" href="?q={{ q }}&page={{ page_obj.previous_page_number }}">Previous</a>
+            {% endif %}
+            <span class="muted">Page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+        {%  if page_obj.has_next %}
+                <a class="btn" href="?q={{ q }}&page={{ page_obj.next_page_number }}">Next</a>
+            {% endif %}
+        </div>
+
 {% endblock %}
 
 
